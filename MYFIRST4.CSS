@@ -1,0 +1,106 @@
+/* Animated gradient background */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: linear-gradient(-45deg, #1e1e2f, #2d2d44, #3b3b5c, #24243e);
+    background-size: 400% 400%;
+    animation: gradientMove 10s ease infinite;
+    color: white;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+header {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #ff9800;
+}
+
+main {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    margin: 20px;
+}
+
+/* Fade animation for tabs */
+.fade-in {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.tab {
+    display: none;
+}
+
+.tab.active {
+    display: block;
+    animation: fadeShow 0.5s ease forwards;
+}
+
+@keyframes fadeShow {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form styles with animations */
+form label {
+    display: block;
+    margin: 10px 0;
+    transform: scale(1);
+    transition: transform 0.2s ease;
+}
+
+form label:hover {
+    transform: scale(1.02);
+}
+
+select {
+    padding: 5px;
+    margin-left: 10px;
+    transition: box-shadow 0.3s ease;
+}
+
+select:focus {
+    box-shadow: 0 0 8px #ff9800;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    background: #ff9800;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background: #e68900;
+    transform: scale(1.05);
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+}
