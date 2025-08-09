@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PC Builder — Interactive Guide</title>
+  <style>
+    /* --- Reset & base --- */
+    :root{
+      --bg1: #0f1724;
+      --card: rgba(255,255,255,0.05);
+      --accent: #6ee7b7;
+      --muted: rgba(255,255,255,0.6);
+      --glass: rgba(255,255,255,0.04);
+      --glass-2: rgba(255,255,255,0.02);
+      --glass-border: rgba(255,255,255,0.06);
+      --glass-glow: 0 6px 30px rgba(110,231,183,0.06);
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg1);color:#e6eef6}
+
+    /* --- Fancy animated gradient background --- */
+    body::before{
+      content:"";position:fixed;inset:0;z-index:-2;
+      background: linear-gradient(120deg, rgba(110,231,183,0.06), rgba(99,102,241,0.05), rgba(144,205,255,0.04));
+      backdrop-filter: blur(6px);
+      animation: floatBG 20s linear infinite;
+    }
+    @keyframes floatBG{
+      0%{transform:translateY(0) rotate(0deg)}
+      50%{transform:translateY(-20px) rotate(3deg)}
+      100%{transform:translateY(0) rotate(0deg)}
+    }
+
+    /* glowing geometric shapes */
+    .shape{
+      position:fixed;z-index:-3;filter:blur(70px);opacity:0.35;mix-blend-mode:screen;
+    }
+    .shape.a{width:450px;height:450px;background:radial-gradient(circle at 30% 30%, #6ee7b7, transparent 40%);} 
+    .shape.b{right:-120px;top:-80px;width:380px;height:380px;background:conic-gradient(from 120deg, #6366f1, transparent 40%);} 
+
+    /* --- Layout --- */
+    .container{max-width:1100px;margin:40px auto;padding:28px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .logo{display:flex;gap:12px;align-items:center}
+    .logo .mark{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#34d399,#60a5fa);display:flex;align-items:center;justify-content:center;color:#04263b;font-weight:700}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    nav.tabs{display:flex;gap:8px;margin-top:18px}
+    .tab{padding:10px 14px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);cursor:pointer;transition:all .25s;font-weight:600}
+    .tab.active{background:linear-gradient(180deg, rgba(110,231,183,0.06), rgba(96,165,250,0.03));box-shadow:var(--glass-glow);transform:translateY(-4px)}
+
+    main{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:20px}
+
+    /* left content area */
+    .card{background:linear-gradient(180deg,var(--card),transparent);border-radius:14px;padding:18px;border:1px solid var(--glass-border);box-shadow:0 10px 30px rgba(2,6,23,0.6)}
+    .build-area{min-height:520px;overflow:auto}
+
+    /* grid of components */
+    .parts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .part{padding:12px;border-radius:10px;background:var(--glass-2);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform .18s, box-shadow .18s}
+    .part:hover{transform:translateY(-6px);box-shadow:var(--glass-glow)}
+    .part.selected{outline:2px solid rgba(110,231,183,0.18);background:linear-gradient(90deg, rgba(110,231,183,0.02), rgba(99,102,241,0.01))}
+    .part h4{margin:6px 0 4px;font-size:14px}
+    .part small{color:var(--muted);display:block}
+
+    /* preview */
+    .preview{height:220px;border-radius:10px;border:1px dashed rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;flex-direction:column}
+    .pc-case{width:140px;height:180px;border-radius:8px;background:linear-gradient(180deg,#071428,#0b2230);border:1px solid rgba(255,255,255,0.03);position:relative;overflow:hidden;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .led{position:absolute;left:12px;top:18px;width:16px;height:16px;border-radius:3px;background:linear-gradient(90deg,#60a5fa,#6ee7b7);box-shadow:0 4px 18px rgba(102,126,234,0.25)}
+    .fan{position:absolute;right:14px;bottom:18px;width:56px;height:56px;border-radius:50%;border:6px solid rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center}
+    .fan::before{content:"";width:80%;height:80%;border-radius:50%;background:conic-gradient(from 0deg,#ffffff10,#ffffff00);transform-origin:50% 50%;animation:spin 3s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* right sidebar */
+    aside{position:relative}
+    .summary{display:flex;flex-direction:column;gap:12px}
+    .line{display:flex;justify-content:space-between;align-items:center}
+    .total{font-size:18px;font-weight:700}
+
+    /* selection display (shows currently highlighted text) */
+    .selection-display{padding:10px;border-radius:8px;background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.03);font-size:13px;color:var(--muted);min-height:46px}
+
+    /* footer actions */
+    .actions{display:flex;gap:8px;margin-top:12px}
+    button.btn{padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+    .btn.primary{background:linear-gradient(90deg,#34d399,#60a5fa);color:#04263b}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:900px){main{grid-template-columns:1fr} aside{order:2}}
+
+    /* tiny flourish for tab content switching */
+    .tab-content{opacity:0;transform:translateY(8px);transition:all .28s}
+    .tab-content.active{opacity:1;transform:none}
+
+    /* subtle entrance */
+    .card.fade-in{animation:enter .6s cubic-bezier(.2,.9,.3,1) both}
+    @keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  </style>
+</head>
+<body>
+  <div class="shape a" style="left:-120px;bottom:-80px"></div>
+  <div class="shape b"></div>
+
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="mark">PC</div>
+        <div>
+          <h1>PC Builder — Interactive Guide</h1>
+          <p class="lead">Fast visual PC builder with animations, live preview & price calc</p>
+        </div>
+      </div>
+      <div>
+        <button class="btn ghost" id="resetBtn">Reset</button>
+        <button class="btn primary" id="exportBtn">Export Summary</button>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <div class="tab active" data-tab="build">Build PC</div>
+      <div class="tab" data-tab="parts">Parts Library</div>
+      <div class="tab" data-tab="guide">Guide</div>
+      <div class="tab" data-tab="about">About</div>
+    </nav>
+
+    <main>
+      <section class="card build-area fade-in" aria-live="polite">
+        <div id="build" class="tab-content active">
+          <h3>Pick your components</h3>
+          <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;align-items:flex-start">
+            <div style="flex:1;min-width:320px">
+              <div class="preview card" id="previewCard">
+                <div class="pc-case" id="pcCase">
+                  <div class="led" id="led"></div>
+                  <div class="fan"></div>
+                </div>
+                <div style="margin-top:12px;color:var(--muted);font-size:13px">Live preview of selected parts</div>
+              </div>
+
+              <div style="margin-top:14px" class="card">
+                <h4 style="margin:0 0 8px 0">Components</h4>
+                <div class="parts-grid" id="partsGrid">
+                  <!-- parts inserted by JS -->
+                </div>
+              </div>
+            </div>
+
+            <aside style="width:320px">
+              <div class="card summary">
+                <h4 style="margin:0">Build Summary</h4>
+                <div class="line"><span>CPU</span><strong id="cpuName">—</strong></div>
+                <div class="line"><span>GPU</span><strong id="gpuName">—</strong></div>
+                <div class="line"><span>RAM</span><strong id="ramName">—</strong></div>
+                <div class="line"><span>Storage</span><strong id="ssdName">—</strong></div>
+                <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03)">
+                <div class="line total"><span>Total</span><span id="totalPrice">EGP 0</span></div>
+
+                <div style="margin-top:10px"> 
+                  <div style="font-size:13px;color:var(--muted)">Highlighted text (select any explanation below):</div>
+                  <div class="selection-display" id="selectionDisplay">Nothing selected</div>
+                </div>
+
+                <div class="actions">
+                  <button class="btn primary" id="addToCart">Add to Cart</button>
+                  <button class="btn ghost" id="shareBtn">Share</button>
+                </div>
+              </div>
+
+              <div style="margin-top:12px" class="card">
+                <h4 style="margin:0 0 8px 0">Quick Tips</h4>
+                <p style="margin:0;color:var(--muted);font-size:13px" id="tips">
+                  A mid-range balanced build usually pairs a strong CPU with a single powerful GPU. Keep at least 16GB RAM for gaming and multitasking.
+                </p>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <div id="parts" class="tab-content">
+          <h3>Parts Library</h3>
+          <p style="color:var(--muted)">Browse more parts and filter by price / type.</p>
+          <div class="card" style="margin-top:12px">
+            <input id="searchParts" placeholder="Search parts..." style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit">
+            <div id="libraryGrid" class="parts-grid" style="margin-top:12px"></div>
+          </div>
+        </div>
+
+        <div id="guide" class="tab-content">
+          <h3>Guide</h3>
+          <article class="card" style="margin-top:12px">
+            <h4>How to choose components</h4>
+            <p>Select components on the left. If you're unsure, select the "Balanced" preset in the Parts Library. You can also select any paragraph on this page to show the text in the right sidebar.</p>
+            <h5>Compatibility notes</h5>
+            <p>Check socket type for CPU and motherboard. Ensure PSU wattage is enough for the chosen GPU. Maintain airflow and cooling for performance and longevity.</p>
+          </article>
+        </div>
+
+        <div id="about" class="tab-content">
+          <h3>About</h3>
+          <div class="card" style="margin-top:12px">
+            <p style="color:var(--muted)">This demo is a single-file HTML app that demonstrates a responsive interface, simple animations, and interactive state for building a PC. Save it as an .html file and open in any modern browser.</p>
+          </div>
+        </div>
+
+      </section>
+
+      <aside>
+        <!-- placeholder for extra right-side content if needed -->
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    // --- Demo data ---
+    const PARTS = [
+      {id:'cpu1',type:'CPU',name:'Intel Core i5-14600',price:8500,desc:'Great mid-range performance for gaming and productivity.'},
+      {id:'cpu2',type:'CPU',name:'AMD Ryzen 5 7600X',price:7800,desc:'Excellent single-thread performance and efficiency.'},
+      {id:'gpu1',type:'GPU',name:'NVIDIA RTX 4070',price:22000,desc:'Very capable 1440p performance.'},
+      {id:'gpu2',type:'GPU',name:'AMD RX 7800 XT',price:19500,desc:'Competitive performance and VRAM.'},
+      {id:'ram1',type:'RAM',name:'Corsair Vengeance 16GB (2x8) DDR5',price:2400,desc:'Fast RAM for modern platforms.'},
+      {id:'ram2',type:'RAM',name:'Kingston 32GB (2x16) DDR4',price:3600,desc:'Plenty of memory for content creation.'},
+      {id:'ssd1',type:'Storage',name:'Samsung 980 1TB NVMe',price:2200,desc:'Fast NVMe SSD for OS and games.'},
+      {id:'ssd2',type:'Storage',name:'WD Blue 2TB HDD',price:1200,desc:'Cheap bulk storage for media.'}
+    ];
+
+    // --- DOM refs ---
+    const partsGrid = document.getElementById('partsGrid');
+    const libraryGrid = document.getElementById('libraryGrid');
+    const cpuName = document.getElementById('cpuName');
+    const gpuName = document.getElementById('gpuName');
+    const ramName = document.getElementById('ramName');
+    const ssdName = document.getElementById('ssdName');
+    const totalPriceEl = document.getElementById('totalPrice');
+    const selectionDisplay = document.getElementById('selectionDisplay');
+    const previewLed = document.getElementById('led');
+    const pcCase = document.getElementById('pcCase');
+
+    // state
+    const state = {CPU:null,GPU:null,RAM:null,Storage:null};
+
+    // build parts grid
+    function renderPartsGrid(){
+      partsGrid.innerHTML = '';
+      const shown = PARTS.slice(0,6);
+      shown.forEach(p=>{
+        const el = document.createElement('div'); el.className='part'; el.dataset.id=p.id; el.dataset.type=p.type;
+        el.innerHTML = `<h4>${p.name}</h4><small>${p.type} — EGP ${p.price.toLocaleString()}</small><div style="margin-top:8px;color:var(--muted);font-size:12px">${p.desc}</div>`;
+        el.addEventListener('click', ()=>selectPart(p, el));
+        partsGrid.appendChild(el);
+      });
+    }
+
+    // library render
+    function renderLibrary(list=PARTS){
+      libraryGrid.innerHTML = '';
+      list.forEach(p=>{
+        const el = document.createElement('div'); el.className='part'; el.dataset.id=p.id; el.dataset.type=p.type;
+        el.innerHTML = `<h4>${p.name}</h4><small>${p.type} — EGP ${p.price.toLocaleString()}</small><div style="margin-top:8px;color:var(--muted);font-size:12px">${p.desc}</div>`;
+        el.addEventListener('click', ()=>selectPart(p, el));
+        libraryGrid.appendChild(el);
+      });
+    }
+
+    // select part
+    function selectPart(part, el){
+      // mark selected in UI (single selected per type)
+      // find existing selected and remove
+      const existing = document.querySelector(`.part.selected[data-type='${part.type}']`);
+      if(existing && existing!==el) existing.classList.remove('selected');
+      el.classList.toggle('selected');
+      const isSelected = el.classList.contains('selected');
+      if(isSelected) state[mapType(part.type)] = part; else state[mapType(part.type)] = null;
+      updateSummary();
+      animatePreview(part, isSelected);
+    }
+
+    function mapType(t){
+      if(t==='CPU') return 'CPU';
+      if(t==='GPU') return 'GPU';
+      if(t==='RAM') return 'RAM';
+      return 'Storage';
+    }
+
+    function updateSummary(){
+      cpuName.textContent = state.CPU ? state.CPU.name : '—';
+      gpuName.textContent = state.GPU ? state.GPU.name : '—';
+      ramName.textContent = state.RAM ? state.RAM.name : '—';
+      ssdName.textContent = state.Storage ? state.Storage.name : '—';
+      const total = [state.CPU,state.GPU,state.RAM,state.Storage].filter(Boolean).reduce((s,p)=>s+p.price,0);
+      totalPriceEl.textContent = `EGP ${total.toLocaleString()}`;
+    }
+
+    // small animated preview changes
+    function animatePreview(part, on){
+      // LED color change based on GPU choice as a playful effect
+      if(part.type==='GPU' && on){
+        previewLed.style.animation = 'pulse 1.6s infinite';
+        previewLed.style.background = 'linear-gradient(90deg,#ff7a7a,#ffd86b)';
+      }
+      if(!on && part.type==='GPU'){
+        previewLed.style.background = '';
+        previewLed.style.animation = '';
+      }
+    }
+
+    // pulse keyframe insertion
+    const style = document.createElement('style'); style.textContent = `@keyframes pulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:0.8}100%{transform:scale(1);opacity:1}}`; document.head.appendChild(style);
+
+    // tabs
+    document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      const target = t.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+    }));
+
+    // search
+    document.getElementById('searchParts').addEventListener('input', (e)=>{
+      const q = e.target.value.toLowerCase().trim();
+      const results = PARTS.filter(p=>p.name.toLowerCase().includes(q) || p.type.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+      renderLibrary(results);
+    });
+
+    // selection detection: when user selects text on the page, show it in the selection display
+    document.addEventListener('selectionchange', ()=>{
+      const sel = document.getSelection();
+      if(!sel || sel.isCollapsed){ selectionDisplay.textContent = 'Nothing selected'; return }
+      const text = sel.toString().trim().slice(0,200);
+      selectionDisplay.textContent = text || 'Nothing selected';
+    });
+
+    // reset/export
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      document.querySelectorAll('.part.selected').forEach(el=>el.classList.remove('selected'));
+      Object.keys(state).forEach(k=>state[k]=null);
+      updateSummary();
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', ()=>{
+      const data = {
+        build: {CPU:state.CPU, GPU:state.GPU, RAM:state.RAM, Storage:state.Storage},
+        total: [state.CPU,state.GPU,state.RAM,state.Storage].filter(Boolean).reduce((s,p)=>s+p.price,0),
+        timestamp: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'pc-build-summary.json'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    // small share action
+    document.getElementById('shareBtn').addEventListener('click', ()=>{
+      const text = `My build: CPU:${state.CPU?state.CPU.name:'—'} GPU:${state.GPU?state.GPU.name:'—'} Total:${[state.CPU,state.GPU,state.RAM,state.Storage].filter(Boolean).reduce((s,p)=>s+p.price,0)}`;
+      if(navigator.share) navigator.share({title:'My PC Build',text}).catch(()=>alert('Share failed'));
+      else navigator.clipboard.writeText(text).then(()=>alert('Build copied to clipboard'));
+    });
+
+    // add initial renders
+    renderPartsGrid(); renderLibrary(); updateSummary();
+
+    // tiny UX: clicking outside selection clears it quickly
+    document.body.addEventListener('click', (e)=>{
+      if(e.target.closest('.part')) return; // don't interfere when selecting a part
+      // keep selection behavior natural — do nothing else
+    });
+
+  </script>
+</body>
+</html>
